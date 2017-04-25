@@ -1,0 +1,13 @@
+.leftMenu{}
+.leftMenu li{
+    list-style: none;
+}
+.leftMenu li ul{
+    display: none;
+}
+.leftMenu .expand>ul,.leftMenu .active>ul{
+    display: block;
+}
+.leftMenu-item{
+    cursor: pointer;
+}

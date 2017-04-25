@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>jquery-leftMenu</title>
+    <link rel="stylesheet" href="jquery-leftMenu/leftMenu.css">
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="jquery-leftMenu/leftMenu.js"></script>
+    <script src="data.js"></script>
+    <style>
+        .demo{
+            width: 300px;
+        }
+        .demo-item{
+            height: 30px;
+            line-height: 30px;
+        }
+        .demo-item.active{
+            color: white;
+            background-color: #3388ff;
+        }
+        .demo-item.notLeaf::before{
+            content: url("forder.png");
+            display: inline-block;
+            top: 3px;
+            position: relative;
+        }
+        .demo-item.notLeaf.active::before{
+            content: url("forder_active.png");
+        }
+        .demo-item.notLeaf::after{
+            content: ">";
+            display: inline-block;
+            float: right;
+            margin-right: 4px;
+        }
+        .demo-item.notLeaf.isExpand::after{
+            -moz-transform:rotate(90deg);
+            -webkit-transform:rotate(90deg);
+            -ms-transform:rotate(90deg);
+            transform:rotate(90deg);
+        }
+    </style>
+</head>
+<body>
+<div id="leftMenu" class="demo"></div>
+<script>
+    $("#leftMenu").leftMenu({
+        datas:datas,
+        formatter:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas){
+            return $("<div/>",{
+                "class":function(){
+                    var cls="demo-item ";
+                    if(!isLeaf){
+                        cls+="notLeaf ";
+                    }
+                    if(isActive){
+                        cls+=" active";
+                    }
+                    if(isExpand){
+                        cls+="isExpand";
+                    }
+                    return cls;
+                }
+            }).append(
+                 $("<span/>",{
+                     "text":currentData.name
+                 })
+            )
+        },
+        rowEvents: {
+            "click":function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas,event){
+                event.stopPropagation();
+                this.leftMenu("selectById",currentData.id);
+                console.log(this.leftMenu("getSelected"));
+            }
+        }
+    });
+</script>
+</body>
+</html>
