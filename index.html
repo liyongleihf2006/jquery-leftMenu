@@ -44,7 +44,8 @@
 </head>
 <body>
 <div id="leftMenu" class="demo"></div>
-<input id="change" type="button" value="修改数据">
+<input id="change" type="button" value="修改数据但不重置状态">
+<input id="change2" type="button" value="修改数据并重置状态">
 <script>
     $("#leftMenu").leftMenu({
         datas:[],
@@ -85,6 +86,11 @@
     $("#change").on("click",function(){
         $.get("data.json").done(function(datas){
             $("#leftMenu").leftMenu("setDatas",datas);
+        });
+    });
+    $("#change2").on("click",function(){
+        $.get("data.json").done(function(datas){
+            $("#leftMenu").leftMenu("setDatas",datas,true);
         });
     });
 </script>
