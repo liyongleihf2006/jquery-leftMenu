@@ -44,9 +44,10 @@
 </head>
 <body>
 <div id="leftMenu" class="demo"></div>
+<input id="change" type="button" value="修改数据">
 <script>
     $("#leftMenu").leftMenu({
-        datas:datas,
+        datas:[],
         formatter:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas){
             return $("<div/>",{
                 "class":function(){
@@ -63,9 +64,9 @@
                     return cls;
                 }
             }).append(
-                 $("<span/>",{
-                     "text":currentData.name
-                 })
+                    $("<span/>",{
+                        "text":currentData.name
+                    })
             )
         },
         onSelected:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas){
@@ -77,6 +78,14 @@
                 this.leftMenu("selectById",currentData.id);
             }
         }
+    });
+    $.get("data.json").done(function(datas){
+        $("#leftMenu").leftMenu("setDatas",datas);
+    });
+    $("#change").on("click",function(){
+        $.get("data.json").done(function(datas){
+            $("#leftMenu").leftMenu("setDatas",datas);
+        });
     });
 </script>
 </body>

@@ -103,7 +103,17 @@
         return this;
     }
     function setDatas(datas) {
-        params = this.data('leftMenu');
+        params = this.data('leftMenu'),
+        id=params.id,
+        cascadeKey=params.cascadeKey,
+        prevDatas=params.datas;
+        _recursiveProcessing(datas,function(currentData){
+            _recursiveProcessing(prevDatas,function(currentPrevData){
+                if(currentData[id]===currentPrevData[id]){
+                    currentData._active=currentPrevData._active||currentData._active;
+                }
+            },cascadeKey);
+        },cascadeKey);
         params.datas = datas;
     }
     function select(currentData){
@@ -236,4 +246,18 @@
             })
         }
     }
+    function _recursiveProcessing(datas,handler,lowerLevelKey){
+        lowerLevelKey=lowerLevelKey||"children";
+        recursive(datas,null,-1);
+        function recursive(currentDatas,upperData,level){
+            currentDatas.forEach(function(currentData,idx){
+                if(!idx){level++};
+                handler(currentData,level,idx,currentDatas,upperData,datas);
+                var lowerDatas=currentData[lowerLevelKey];
+                if(lowerDatas&&lowerDatas instanceof Array){
+                    recursive(lowerDatas,currentData,level);
+                }
+            });
+        }
+    };
 })(jQuery);

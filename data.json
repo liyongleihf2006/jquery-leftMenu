@@ -1,0 +1,50 @@
+[{
+    "id":1,
+    "name":"dom1",
+    "children":[{
+        "id":"11",
+        "name":"dom11",
+        "children":[{
+            "id":"111",
+            "name":"dom111"
+        }]
+    },{
+        "id":"12",
+        "name":"dom12",
+        "children":[{
+            "id":"121",
+            "name":"dom121"
+        }]
+    }]
+},{
+    "id":2,
+    "name":"dom2",
+    "children":[{
+        "id":"21",
+        "name":"dom21",
+        "children":[{
+            "id":"211",
+            "name":"dom211"
+        },{
+            "id":"212",
+            "name":"dom212",
+            "children":[{
+                "id":"2121",
+                "name":"dom2121"
+            },{
+                "id":"2122",
+                "name":"dom2122"
+            }]
+        }]
+    }]
+},{
+    "id":3,
+    "name":"dom3",
+    "children":[{
+        "id":"31",
+        "name":"dom31"
+    },{
+        "id":"32",
+        "name":"dom32"
+    }]
+}]
