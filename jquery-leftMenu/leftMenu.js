@@ -22,10 +22,14 @@
  *                  currentDatas当前数据所在的组数据
  *                  upperData当前数据的父数据
  *                  datas传入插件的所有的数据
+ *    onSelected:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas)
+ *             节点被选中事件
+ *                  注入的参数同formatter
  *    rowEvents: {}
  *             以键值对的形式传入事件,跟jquery的事件绑定相同,如
- *             rowEvents:{click:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas)}
+ *             rowEvents:{click:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas,event)}
  *                  注入的参数同formatter
+ *                  event是事件对象,同jquery的事件对象
  * methods:
  *    setDatas(datas)
 *              重新向组件中传入datas
@@ -92,6 +96,7 @@
                 "text":currentData.text
             })
         },
+        onSelected:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas){},
         rowEvents: {}
     };
     function _init(params) {
@@ -168,6 +173,7 @@
             expandCls=params.expandCls,
             activeCls=params.activeCls,
             formatter=params.formatter,
+            onSelected=params.onSelected,
             rowEvents=params.rowEvents;
         return $("<ul/>",{
             "class":ulCls
@@ -190,6 +196,9 @@
                         return cls;
                     }
                 });
+                if(currentData._active){
+                    onSelected.call($self,currentData,!(currentData[cascadeKey]||[]).length,!!currentData._active,_isActiveAncestor.call($self,currentData),level,idx,currentDatas,upperData,datas);
+                }
                 return $("<li/>",option)
                     .html([
                         $("<div/>",{

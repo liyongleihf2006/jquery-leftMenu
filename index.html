@@ -68,11 +68,13 @@
                  })
             )
         },
+        onSelected:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas){
+            console.log(this.leftMenu("getSelected"));
+        },
         rowEvents: {
             "click":function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas,event){
                 event.stopPropagation();
                 this.leftMenu("selectById",currentData.id);
-                console.log(this.leftMenu("getSelected"));
             }
         }
     });
