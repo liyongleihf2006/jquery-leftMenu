@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="jquery-leftMenu/leftMenu.css">
     <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="jquery-leftMenu/leftMenu.js"></script>
-    <script src="data.js"></script>
     <style>
         .demo{
             width: 300px;
@@ -16,7 +15,6 @@
             line-height: 30px;
         }
         .demo-item.active{
-            color: white;
             background-color: #3388ff;
         }
         .demo-item.notLeaf::before{
@@ -49,8 +47,9 @@
 <script>
     $("#leftMenu").leftMenu({
         datas:[],
+        showExpand:false,
         formatter:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas){
-            return $("<div/>",{
+            return $("<span/>",{
                 "class":function(){
                     var cls="demo-item ";
                     if(!isLeaf){
@@ -60,7 +59,7 @@
                         cls+=" active";
                     }
                     if(isExpand){
-                        cls+="isExpand";
+                        cls+=" isExpand";
                     }
                     return cls;
                 }

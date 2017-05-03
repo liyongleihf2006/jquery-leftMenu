@@ -94,6 +94,14 @@
         expandCls:"expand",
         activeCls:"active",
         datas: [],
+        showExpand:true,
+        expandFormatter:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas){
+            console.log(isExpand);
+            if(isExpand){
+                return "-";
+            }
+            return "+";
+        },
         formatter:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas){
             return $("<span/>",{
                 "text":currentData.text
@@ -106,15 +114,19 @@
         return this;
     }
     function setDatas(datas,reset) {
-        params = this.data('leftMenu'),
+        var params = this.data('leftMenu'),
         id=params.id,
         cascadeKey=params.cascadeKey,
+        showExpand=params.showExpand,
         prevDatas=params.datas;
         if(!reset){
             _recursiveProcessing(datas,function(currentData){
                 _recursiveProcessing(prevDatas,function(currentPrevData){
                     if(currentData[id]===currentPrevData[id]){
                         currentData._active=currentPrevData._active||currentData._active;
+                        if(showExpand){
+                            currentData._expand=currentPrevData._expand||currentData._expand;
+                        }
                     }
                 },cascadeKey);
             },cascadeKey);
@@ -122,7 +134,7 @@
         params.datas = datas;
     }
     function select(currentData){
-        params = this.data('leftMenu'),
+        var params = this.data('leftMenu'),
             datas=params.datas,
             cascadeKey=params.cascadeKey,
             id=params.id;
@@ -137,7 +149,7 @@
         }
     }
     function selectById(idx){
-        params = this.data('leftMenu'),
+        var params = this.data('leftMenu'),
             datas=params.datas,
             cascadeKey=params.cascadeKey,
             id=params.id;
@@ -152,8 +164,7 @@
         }
     }
     function getSelected() {
-        var $self = this,
-            params = $self.data("leftMenu"),
+        var params = this.data("leftMenu"),
             datas=params.datas,
             cascadeKey=params.cascadeKey,
             currentData=null;
@@ -169,15 +180,18 @@
             })
         }
     }
-    function _render() {
+    function _render(doExpand) {
         var $self = this,
             params = $self.data("leftMenu"),
-            datas=params.datas;
-        $self.addClass("leftMenu").html(
-            _recursiveGenerate.call($self,datas,-1,null)
+            datas=params.datas,
+            showExpand=params.showExpand;
+        $self.addClass(function(){
+            return "leftMenu"+(showExpand?" showExpand":"");
+        }).html(
+            _recursiveGenerate.call($self,datas,-1,null,doExpand)
         );
     }
-    function _recursiveGenerate(currentDatas,level,upperData){
+    function _recursiveGenerate(currentDatas,level,upperData,doExpand){
         var $self = this,
             params = $self.data("leftMenu"),
             datas = params.datas,
@@ -189,7 +203,9 @@
             activeCls=params.activeCls,
             formatter=params.formatter,
             onSelected=params.onSelected,
-            rowEvents=params.rowEvents;
+            rowEvents=params.rowEvents,
+            showExpand=params.showExpand,
+            expandFormatter=params.expandFormatter;
         return $("<ul/>",{
             "class":ulCls
         }).html(
@@ -197,32 +213,65 @@
                 if(!idx){
                     level++;
                 }
-                var option=Object.keys(rowEvents).reduce(function(result,key){
-                    result[key]=rowEvents[key].bind($self,currentData,!(currentData[cascadeKey]||[]).length,!!currentData._active,_isActiveAncestor.call($self,currentData),level,idx,currentDatas,upperData,datas);
-                    return result;
-                },{
-                    "class":function(){
-                        var cls = liCls;
-                        if(currentData._active){
-                            cls+=" "+activeCls;
-                        }else if(_isActiveAncestor.call($self,currentData)){
-                            cls+=" "+expandCls;
-                        }
-                        return cls;
+                var isLeaf=!(currentData[cascadeKey]||[]).length,
+                isExpand=function(){
+                    if(!showExpand){
+                        return _isActiveAncestor.call($self,currentData);
+                    }else{
+                        return !!currentData._expand;
                     }
-                });
-                if(currentData._active){
-                    onSelected.call($self,currentData,!(currentData[cascadeKey]||[]).length,!!currentData._active,_isActiveAncestor.call($self,currentData),level,idx,currentDatas,upperData,datas);
+                }();
+                if(currentData._active&&!doExpand){
+                    onSelected.call($self,currentData,isLeaf,!!currentData._active,isExpand,level,idx,currentDatas,upperData,datas);
                 }
-                return $("<li/>",option)
+                return $("<li/>",{
+                        "class":function(){
+                            var cls = liCls;
+                            if(currentData._active){
+                                cls+=" "+activeCls;
+                            }
+                            if(!showExpand){
+                                if(_isActiveAncestor.call($self,currentData)){
+                                    cls+=" "+expandCls;
+                                }
+                            }else{
+                                if(currentData._expand){
+                                    cls+=" "+expandCls;
+                                }
+                            }
+                            return cls;
+                        }
+                    })
                     .html([
                         $("<div/>",{
                             "class":itemCls
                         }).append(
-                            formatter.call($self,currentData,!(currentData[cascadeKey]||[]).length,!!currentData._active,_isActiveAncestor.call($self,currentData),level,idx,currentDatas,upperData,datas)
+                            function(){
+                                if(showExpand){
+                                    if(!isLeaf){
+                                        return $("<span/>",{
+                                            "click":function(){
+                                                currentData._expand=!currentData._expand;
+                                                _render.call($self,true);
+                                            }
+                                        }).append(
+                                            expandFormatter.call($self,currentData,isLeaf,!!currentData._active,isExpand,level,idx,currentDatas,upperData,datas)
+                                        )
+                                    }
+                                }
+                            }(),
+                            function(){
+                                var content= formatter.call($self,currentData,isLeaf,!!currentData._active,isExpand,level,idx,currentDatas,upperData,datas);
+                                var events=Object.keys(rowEvents).reduce(function(result,key){
+                                    result[key]=rowEvents[key].bind($self,currentData,isLeaf,!!currentData._active,isExpand,level,idx,currentDatas,upperData,datas);
+                                    return result;
+                                },{});
+                                content.on(events);
+                                return content;
+                            }()
                         ),
                         function(){
-                            if((currentData[cascadeKey]||[]).length){
+                            if(!isLeaf){
                                 return _recursiveGenerate.call($self,currentData[cascadeKey],level,currentData,upperData);
                             }
                         }()

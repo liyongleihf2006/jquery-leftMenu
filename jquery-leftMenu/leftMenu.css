@@ -5,7 +5,7 @@
 .leftMenu li ul{
     display: none;
 }
-.leftMenu .expand>ul,.leftMenu .active>ul{
+.leftMenu .expand>ul,.leftMenu:not(.showExpand) .active>ul{
     display: block;
 }
 .leftMenu-item{
