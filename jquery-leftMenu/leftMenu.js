@@ -10,6 +10,12 @@
  *    expandCls:"expand",被展开元素的class
  *    activeCls:"active",被选中元素的class
  *    datas: [],传入的数据
+ *    expandFormatter:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas){打开关闭的样式
+ *           if(isExpand){
+ *              return "-";
+ *           }
+ *           return "+";
+ *    },
  *    formatter:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas)
  *             定制每个展示节点的格式函数,返回生成的节点
  *                  this是调用该插件的jquery对象
