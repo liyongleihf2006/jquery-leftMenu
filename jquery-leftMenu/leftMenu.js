@@ -7,6 +7,7 @@
  *    ulCls:"leftMenu-ul",导航中的ul的class
  *    liCls:"leftMenu-li",导航中的li的class
  *    itemCls:"leftMenu-item",导航中的每节点的容器的class
+ *    expandCaretCls:"expandCaret",折叠控件的class
  *    expandCls:"expand",被展开元素的class
  *    activeCls:"active",被选中元素的class
  *    datas: [],传入的数据
@@ -97,6 +98,7 @@
         ulCls:"leftMenu-ul",
         liCls:"leftMenu-li",
         itemCls:"leftMenu-item",
+        expandCaretCls:"expandCaret",
         expandCls:"expand",
         activeCls:"active",
         datas: [],
@@ -204,6 +206,7 @@
             ulCls=params.ulCls,
             liCls=params.liCls,
             itemCls=params.itemCls,
+            expandCaretCls=params.expandCaretCls,
             expandCls=params.expandCls,
             activeCls=params.activeCls,
             formatter=params.formatter,
@@ -255,6 +258,7 @@
                                 if(showExpand){
                                     if(!isLeaf){
                                         return $("<span/>",{
+                                            "class":expandCaretCls,
                                             "click":function(){
                                                 currentData._expand=!currentData._expand;
                                                 _render.call($self,true);
