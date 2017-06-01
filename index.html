@@ -47,9 +47,9 @@
 <script>
     $("#leftMenu").leftMenu({
         datas:[],
-        showExpand:false,
+        showExpand:true,
         formatter:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas){
-            return $("<span/>",{
+            return [$("<span/>",{
                 "class":function(){
                     var cls="demo-item ";
                     if(!isLeaf){
@@ -67,7 +67,7 @@
                     $("<span/>",{
                         "text":currentData.name
                     })
-            )
+            )]
         },
         onSelected:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas){
             console.log(this.leftMenu("getSelected"));

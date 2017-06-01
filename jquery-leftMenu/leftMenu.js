@@ -96,7 +96,6 @@
         datas: [],
         showExpand:true,
         expandFormatter:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas){
-            console.log(isExpand);
             if(isExpand){
                 return "-";
             }
@@ -266,7 +265,9 @@
                                     result[key]=rowEvents[key].bind($self,currentData,isLeaf,!!currentData._active,isExpand,level,idx,currentDatas,upperData,datas);
                                     return result;
                                 },{});
-                                content.on(events);
+                                $.each(content,function(idx,ele){
+                                    $(ele).on(events);
+                                });
                                 return content;
                             }()
                         ),
