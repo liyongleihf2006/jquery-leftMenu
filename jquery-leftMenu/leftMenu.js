@@ -38,8 +38,9 @@
  *                  注入的参数同formatter
  *                  event是事件对象,同jquery的事件对象
  * methods:
+ *    refresh()刷新
  *    setDatas(datas,reset)
-*              重新向组件中传入datas
+ *              重新向组件中传入datas
  *              datas 重新传入的数据
  *              reset:boolean,default:false,是否重置数据;当不设置或为false的时候，不重置数据，这就意味着原来的插件数据中有数据跟新插入的数据的id值是相同的，那么新的值将继承原来的数据的状态；
  *                                          当设置为true的时候；不会继承原来数据的状态。
@@ -58,7 +59,8 @@
     var setMethods = {
         setDatas: setDatas,
         select:select,
-        selectById:selectById
+        selectById:selectById,
+        refresh:refresh
     };
     var getMethods = {
         getSelected: getSelected
@@ -171,6 +173,7 @@
             });
         }
     }
+    function refresh(){}
     function getSelected() {
         var params = this.data("leftMenu"),
             datas=params.datas,
