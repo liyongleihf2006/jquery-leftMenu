@@ -43,6 +43,7 @@
  *              datas 重新传入的数据
  *              reset:boolean,default:false,是否重置数据;当不设置或为false的时候，不重置数据，这就意味着原来的插件数据中有数据跟新插入的数据的id值是相同的，那么新的值将继承原来的数据的状态；
  *                                          当设置为true的时候；不会继承原来数据的状态。
+ *                                          所谓的状态只的是每条数据的以"_"开头的属性，比如实际上被选中的节点的_active=true,被打开的节点的_expand=true,在使用的时候也可以自定义状态属性,只要以"_"开始即可
  *    select(data)
  *             选中传入的数据对应的节点
  *    selectById(id)
@@ -124,16 +125,16 @@
         var params = this.data('leftMenu'),
         id=params.id,
         cascadeKey=params.cascadeKey,
-        showExpand=params.showExpand,
         prevDatas=params.datas;
         if(!reset){
             _recursiveProcessing(datas,function(currentData){
                 _recursiveProcessing(prevDatas,function(currentPrevData){
                     if(currentData[id]===currentPrevData[id]){
-                        currentData._active=currentPrevData._active||currentData._active;
-                        if(showExpand){
-                            currentData._expand=currentPrevData._expand||currentData._expand;
-                        }
+                        Object.keys(currentPrevData).forEach(function(key){
+                           if(key.charAt(0)==="_"){
+                               currentData[key]=currentPrevData[key]||currentData[key];
+                           }
+                        });
                     }
                 },cascadeKey);
             },cascadeKey);
