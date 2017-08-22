@@ -47,6 +47,8 @@
  *                                          所谓的状态只的是每条数据的以"_"开头的属性，比如实际上被选中的节点的_active=true,被打开的节点的_expand=true,在使用的时候也可以自定义状态属性,只要以"_"开始即可
  *    select(data)
  *             选中传入的数据对应的节点
+ *    selectByIdx(...idx)
+ *             根据选中传入的参数确定选中哪一条,比如传入0,2,那么就选中第一层中第一条下面的第三条
  *    selectById(id)
  *             根据传入的id选中对应的节点
  *    getSelected
@@ -59,6 +61,7 @@
     var setMethods = {
         setDatas: setDatas,
         select:select,
+        selectByIdx:selectByIdx,
         selectById:selectById,
         refresh:refresh
     };
@@ -125,17 +128,17 @@
     }
     function setDatas(datas,reset) {
         var params = this.data('leftMenu'),
-        id=params.id,
-        cascadeKey=params.cascadeKey,
-        prevDatas=params.datas;
+            id=params.id,
+            cascadeKey=params.cascadeKey,
+            prevDatas=params.datas;
         if(!reset){
             _recursiveProcessing(datas,function(currentData){
                 _recursiveProcessing(prevDatas,function(currentPrevData){
                     if(currentData[id]===currentPrevData[id]){
                         Object.keys(currentPrevData).forEach(function(key){
-                           if(key.charAt(0)==="_"){
-                               currentData[key]=currentPrevData[key]||currentData[key];
-                           }
+                            if(key.charAt(0)==="_"){
+                                currentData[key]=currentPrevData[key]||currentData[key];
+                            }
                         });
                     }
                 },cascadeKey);
@@ -143,17 +146,69 @@
         }
         params.datas = datas;
     }
+    function _autoExpand(datas,cascadeKey){
+        datas.forEach(function(data){
+            if(autoExpand(data)){
+                data._expand=true;
+            }
+        });
+        function autoExpand(data){
+            var children=data[cascadeKey];
+            if(!children){
+                return false;
+            }
+            if(children.some(function(item){
+                    return item._active;
+                })){
+                return true;
+            }else{
+                return children.some(function(data){
+                    if(autoExpand(data)){
+                        return data._expand=true;
+                    }
+                })
+            }
+        }
+    }
     function select(currentData){
         var params = this.data('leftMenu'),
             datas=params.datas,
             cascadeKey=params.cascadeKey,
             id=params.id;
         changeActive(datas);
+        _autoExpand(datas,cascadeKey);
         function changeActive(datas){
             datas.forEach(function(data){
                 data._active=currentData[id]==data[id]?true:false;
                 if(data[cascadeKey]){
                     changeActive(data[cascadeKey])
+                }
+            });
+        }
+    }
+    function selectByIdx(){
+        var idxs = Array.prototype.slice.call(arguments);
+        var params = this.data('leftMenu'),
+            datas=params.datas,
+            cascadeKey=params.cascadeKey,
+            level=idxs.length-1,
+            currentLevel= -1,
+            currentData;
+        falseActive(datas);
+        while(++currentLevel<=level){
+            if(!currentLevel){
+                currentData=datas[idxs[currentLevel]]
+            }else{
+                currentData=currentData[cascadeKey][idxs[currentLevel]]
+            }
+        }
+        currentData._active=true;
+        _autoExpand(datas,cascadeKey);
+        function falseActive(datas){
+            datas.forEach(function(data,i){
+                data._active=false;
+                if(data[cascadeKey]){
+                    falseActive(data[cascadeKey])
                 }
             });
         }
@@ -164,6 +219,7 @@
             cascadeKey=params.cascadeKey,
             id=params.id;
         changeActive(datas);
+        _autoExpand(datas,cascadeKey);
         function changeActive(datas){
             datas.forEach(function(data){
                 data._active=idx==data[id]?true:false;
@@ -226,34 +282,34 @@
                     level++;
                 }
                 var isLeaf=!(currentData[cascadeKey]||[]).length,
-                isExpand=function(){
-                    if(!showExpand){
-                        return _isActiveAncestor.call($self,currentData);
-                    }else{
-                        return !!currentData._expand;
-                    }
-                }();
+                    isExpand=function(){
+                        if(!showExpand){
+                            return _isActiveAncestor.call($self,currentData);
+                        }else{
+                            return !!currentData._expand;
+                        }
+                    }();
                 if(currentData._active&&!doExpand){
                     onSelected.call($self,currentData,isLeaf,!!currentData._active,isExpand,level,idx,currentDatas,upperData,datas);
                 }
                 return $("<li/>",{
-                        "class":function(){
-                            var cls = liCls;
-                            if(currentData._active){
-                                cls+=" "+activeCls;
-                            }
-                            if(!showExpand){
-                                if(_isActiveAncestor.call($self,currentData)){
-                                    cls+=" "+expandCls;
-                                }
-                            }else{
-                                if(currentData._expand){
-                                    cls+=" "+expandCls;
-                                }
-                            }
-                            return cls;
+                    "class":function(){
+                        var cls = liCls;
+                        if(currentData._active){
+                            cls+=" "+activeCls;
                         }
-                    })
+                        if(!showExpand){
+                            if(_isActiveAncestor.call($self,currentData)){
+                                cls+=" "+expandCls;
+                            }
+                        }else{
+                            if(currentData._expand){
+                                cls+=" "+expandCls;
+                            }
+                        }
+                        return cls;
+                    }
+                })
                     .html([
                         $("<div/>",{
                             "class":itemCls

@@ -7,40 +7,55 @@
     <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="jquery-leftMenu/leftMenu.js"></script>
     <style>
-        .demo{
-            width: 300px;
+        .leftMenu{
+            color: #4d4d4d;
         }
-        .demo-item{
+        .leftMenu-ul{
+            padding-left: 30px;
+        }
+        span.leftMenu-item{
             height: 30px;
-            line-height: 30px;
-        }
-        .demo-item.active{
-            background-color: #3388ff;
-        }
-        .demo-item.notLeaf::before{
-            content: url("forder.png");
             display: inline-block;
-            top: 3px;
-            position: relative;
         }
-        .demo-item.notLeaf.active::before{
-            content: url("forder_active.png");
+        .leftMenu-text:hover{
+            text-decoration: underline;
         }
-        .demo-item.notLeaf::after{
-            content: ">";
+        .expandCaret{
+            position: absolute;
+            margin-left: -15px;
+            vertical-align: middle;
+            height: 30px;
+            margin-top: 1px;
+        }
+        .expandCaret::after{
+            vertical-align: middle;
+            height: 100%;
+            width: 0;
+            content: "";
             display: inline-block;
-            float: right;
-            margin-right: 4px;
         }
-        .demo-item.notLeaf.isExpand::after{
-            -moz-transform:rotate(90deg);
-            -webkit-transform:rotate(90deg);
-            -ms-transform:rotate(90deg);
-            transform:rotate(90deg);
+        .bullet{
+            margin: 0 10px 0 8px;
+        }
+        .middle>*{
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .middle::after{
+            vertical-align: middle;
+            height: 100%;
+            width: 0;
+            content: "";
+            display: inline-block;
         }
     </style>
 </head>
 <body>
+<svg style="display: none;">
+    <symbol id="bullet.svg" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="50" fill="#bbb"/>
+    </symbol>
+</svg>
 <div id="leftMenu" class="demo"></div>
 <input id="change" type="button" value="修改数据但不重置状态">
 <input id="change2" type="button" value="修改数据并重置状态">
@@ -48,13 +63,20 @@
     $("#leftMenu").leftMenu({
         datas:[],
         showExpand:true,
+        expandFormatter:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas){
+            return $("<span/>",{
+                text:function(){
+                    if(isExpand){
+                        return "-";
+                    }
+                    return "+";
+                }
+            });
+        },
         formatter:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas){
             return [$("<span/>",{
                 "class":function(){
-                    var cls="demo-item ";
-                    if(!isLeaf){
-                        cls+="notLeaf ";
-                    }
+                    var cls="leftMenu-item middle";
                     if(isActive){
                         cls+=" active";
                     }
@@ -64,12 +86,26 @@
                     return cls;
                 }
             }).append(
+                    function(){
+                        var svgns="http://www.w3.org/2000/svg";
+                        var xlink="http://www.w3.org/1999/xlink";
+                        var bullet = document.createElementNS(svgns,"svg");
+                        bullet.setAttribute("height",8);
+                        bullet.setAttribute("width",8);
+                        bullet.setAttribute("class","bullet");
+                        var use = document.createElementNS(svgns,"use");
+                        use.setAttributeNS(xlink,"href","#bullet.svg");
+                        bullet.appendChild(use);
+                        return bullet;
+                    }(),
                     $("<span/>",{
+                        "class":"leftMenu-text",
                         "text":currentData.name
                     })
             )]
         },
         onSelected:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas){
+            var page = currentData.name;
             console.log(this.leftMenu("getSelected"));
         },
         rowEvents: {
