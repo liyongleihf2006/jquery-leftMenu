@@ -49,6 +49,8 @@
  *             选中传入的数据对应的节点
  *    selectByIdx(...idx)
  *             根据选中传入的参数确定选中哪一条,比如传入0,2,那么就选中第一层中第一条下面的第三条
+ *    selectDeepFirst
+ *             选中第一个叶子节点
  *    selectById(id)
  *             根据传入的id选中对应的节点
  *    getSelected
@@ -62,6 +64,7 @@
         setDatas: setDatas,
         select:select,
         selectByIdx:selectByIdx,
+        selectDeepFirst:selectDeepFirst,
         selectById:selectById,
         refresh:refresh
     };
@@ -194,7 +197,7 @@
             level=idxs.length-1,
             currentLevel= -1,
             currentData;
-        falseActive(datas);
+        falseActive(datas,cascadeKey);
         while(++currentLevel<=level){
             if(!currentLevel){
                 currentData=datas[idxs[currentLevel]]
@@ -204,14 +207,26 @@
         }
         currentData._active=true;
         _autoExpand(datas,cascadeKey);
-        function falseActive(datas){
-            datas.forEach(function(data,i){
-                data._active=false;
-                if(data[cascadeKey]){
-                    falseActive(data[cascadeKey])
-                }
-            });
+    }
+    function falseActive(datas,cascadeKey){
+        datas.forEach(function(data,i){
+            data._active=false;
+            if(data[cascadeKey]){
+                falseActive(data[cascadeKey],cascadeKey)
+            }
+        });
+    }
+    function selectDeepFirst(){
+        var params = this.data('leftMenu'),
+        datas=params.datas,
+        cascadeKey=params.cascadeKey,
+        currentData=datas[0];
+        falseActive(datas,cascadeKey);
+        while(currentData&&currentData[cascadeKey]&&currentData[cascadeKey].length){
+            currentData=currentData[cascadeKey][0];
         }
+        currentData._active=true;
+        _autoExpand(datas,cascadeKey);
     }
     function selectById(idx){
         var params = this.data('leftMenu'),

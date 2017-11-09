@@ -1,4 +1,4 @@
-[{
+var datas=[{
     "id":1,
     "name":"dom1",
     "children":[{

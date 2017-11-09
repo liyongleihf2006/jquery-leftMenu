@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="jquery-leftMenu/leftMenu.css">
     <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="jquery-leftMenu/leftMenu.js"></script>
+    <script src="./data.js"></script>
     <style>
         .leftMenu{
             color: #4d4d4d;
@@ -48,6 +49,9 @@
             content: "";
             display: inline-block;
         }
+        .active>.leftMenu-item{
+            color: lightgreen;
+        }
     </style>
 </head>
 <body>
@@ -59,6 +63,8 @@
 <div id="leftMenu" class="demo"></div>
 <input id="change" type="button" value="修改数据但不重置状态">
 <input id="change2" type="button" value="修改数据并重置状态">
+<input id="select101" type="button" value="选中第二个节点下面的第一个节点下面的第二个节点">
+<input id="selectDeepFirst" type="button" value="选中第一个叶子节点">
 <script>
     $("#leftMenu").leftMenu({
         datas:[],
@@ -115,18 +121,21 @@
             }
         }
     });
-    $.get("data.json").done(function(datas){
+    var originDatas = JSON.parse(JSON.stringify(datas));
+    $("#leftMenu").leftMenu("setDatas",datas);
+    $("#change").on("click",function(){
+        datas = JSON.parse(JSON.stringify(originDatas));
         $("#leftMenu").leftMenu("setDatas",datas);
     });
-    $("#change").on("click",function(){
-        $.get("data.json").done(function(datas){
-            $("#leftMenu").leftMenu("setDatas",datas);
-        });
-    });
     $("#change2").on("click",function(){
-        $.get("data.json").done(function(datas){
-            $("#leftMenu").leftMenu("setDatas",datas,true);
-        });
+        datas = JSON.parse(JSON.stringify(originDatas));
+        $("#leftMenu").leftMenu("setDatas",datas,true);
+    });
+    $("#select101").on("click",function(){
+        $("#leftMenu").leftMenu("selectByIdx",1,0,1);
+    });
+    $("#selectDeepFirst").on("click",function(){
+        $("#leftMenu").leftMenu("selectDeepFirst");
     });
 </script>
 </body>
