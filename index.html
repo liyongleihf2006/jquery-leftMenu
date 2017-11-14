@@ -110,13 +110,18 @@
                     })
             )]
         },
-        onSelected:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas){
+        onSelected:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas,deferred){
             var page = currentData.name;
             console.log(this.leftMenu("getSelected"));
+            //3秒中后完成延迟对象用于测试选中操作返回的延迟对象的事件
+            setTimeout(function() {
+                deferred.resolve("延迟对象执行成功了");
+            }, 3000);
         },
         rowEvents: {
             "click":function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas,event){
                 event.stopPropagation();
+                console.log(currentData.id);
                 this.leftMenu("selectById",currentData.id);
             }
         }
@@ -132,10 +137,14 @@
         $("#leftMenu").leftMenu("setDatas",datas,true);
     });
     $("#select101").on("click",function(){
-        $("#leftMenu").leftMenu("selectByIdx",1,0,1);
+        $("#leftMenu").leftMenu("selectByIdx",1,0,1).done(function(response){
+            console.log(response);
+        })
     });
     $("#selectDeepFirst").on("click",function(){
-        $("#leftMenu").leftMenu("selectDeepFirst");
+        $("#leftMenu").leftMenu("selectDeepFirst").done(function(response){
+            console.log(response);
+        })
     });
 </script>
 </body>

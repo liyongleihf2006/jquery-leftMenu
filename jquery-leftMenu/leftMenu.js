@@ -29,9 +29,10 @@
  *                  currentDatas当前数据所在的组数据
  *                  upperData当前数据的父数据
  *                  datas传入插件的所有的数据
- *    onSelected:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas)
+ *    onSelected:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas,deferred)
  *             节点被选中事件
- *                  注入的参数同formatter
+ *                  除了参数中的deferred外，注入的参数同formatter,deferred是一个延迟对象,
+ *                  所有的选择方法都返回该延迟对象,因此在该事件中resolve或reject可以完成选择后的异步操作
  *    rowEvents: {}
  *             以键值对的形式传入事件,跟jquery的事件绑定相同,如
  *             rowEvents:{click:function(currentData,isLeaf,isActive,isExpand,level,idx,currentDatas,upperData,datas,event)}
@@ -47,13 +48,13 @@
  *                                          所谓的状态只的是每条数据的以"_"开头的属性，比如实际上被选中的节点的_active=true,被打开的节点的_expand=true,在使用的时候也可以自定义状态属性,只要以"_"开始即可
  *    select(data)
  *             选中传入的数据对应的节点
- *    selectByIdx(...idx)
+ *    selectByIdx(...idx):deferred
  *             根据选中传入的参数确定选中哪一条,比如传入0,2,那么就选中第一层中第一条下面的第三条
- *    selectDeepFirst
+ *    selectDeepFirst:deferred
  *             选中第一个叶子节点
- *    selectById(id)
+ *    selectById(id):deferred
  *             根据传入的id选中对应的节点
- *    getSelected
+ *    getSelected:deferred
  *             获取当前被选中的节点的数据
  */
 (function ($) {
@@ -62,15 +63,18 @@
     }
     var setMethods = {
         setDatas: setDatas,
-        select:select,
-        selectByIdx:selectByIdx,
-        selectDeepFirst:selectDeepFirst,
-        selectById:selectById,
         refresh:refresh
     };
     var getMethods = {
         getSelected: getSelected
     };
+    //返回延迟对象的方法
+    var deferredMethods = {
+        select:select,
+        selectByIdx:selectByIdx,
+        selectDeepFirst:selectDeepFirst,
+        selectById:selectById
+    }
     $.fn.leftMenu = function () {
         var args = arguments, params, method;
         if (!args.length || typeof args[0] == 'object') {
@@ -95,7 +99,31 @@
                 });
             } else if (getMethods.hasOwnProperty(args[0])) {
                 method = getMethods[args[0]];
-                return method.apply(this, params);
+                var returnValue=method.apply(this, params);
+                if(returnValue!==undefined){
+                    return returnValue;
+                }else{
+                    _render.call($self);
+                    return this.data("leftMenu").deferred;
+                }
+            } else if(deferredMethods.hasOwnProperty(args[0])){
+                method = deferredMethods[args[0]];
+                var _this = this;
+                //用于任何选中时,触发的onSelected解决了后的承诺
+                _this.data("leftMenu").deferreds=[];
+                this.each(function (idx) {
+                    var $self = $(this);
+                    method.apply($self, params);
+                    var deferred=new $.Deferred();
+                    _this.data("leftMenu").deferreds.push({
+                        ele:this,
+                        deferred:deferred
+                    });
+                    _render.call($self);
+                });
+                return $.when.apply(null,_this.data("leftMenu").deferreds.map(function(item){
+                    return item.deferred;
+                }));
             } else {
                 throw new Error('There is no such method');
             }
@@ -275,6 +303,7 @@
     }
     function _recursiveGenerate(currentDatas,level,upperData,doExpand){
         var $self = this,
+            ele = this.get(0),
             params = $self.data("leftMenu"),
             datas = params.datas,
             cascadeKey=params.cascadeKey,
@@ -288,7 +317,14 @@
             onSelected=params.onSelected,
             rowEvents=params.rowEvents,
             showExpand=params.showExpand,
-            expandFormatter=params.expandFormatter;
+            expandFormatter=params.expandFormatter,
+            deferreds=params.deferreds||[],
+            deferred = deferreds.reduce(function(prev,item){
+                if(item.ele===ele){
+                    return item.deferred;
+                }
+                return prev;
+            },null);
         return $("<ul/>",{
             "class":ulCls
         }).html(
@@ -305,7 +341,7 @@
                         }
                     }();
                 if(currentData._active&&!doExpand){
-                    onSelected.call($self,currentData,isLeaf,!!currentData._active,isExpand,level,idx,currentDatas,upperData,datas);
+                    onSelected.call($self,currentData,isLeaf,!!currentData._active,isExpand,level,idx,currentDatas,upperData,datas,deferred);
                 }
                 return $("<li/>",{
                     "class":function(){
@@ -358,7 +394,7 @@
                         ),
                         function(){
                             if(!isLeaf){
-                                return _recursiveGenerate.call($self,currentData[cascadeKey],level,currentData,upperData);
+                                return _recursiveGenerate.call($self,currentData[cascadeKey],level,currentData,doExpand);
                             }
                         }()
                     ])
